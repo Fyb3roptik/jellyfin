@@ -1048,18 +1048,18 @@ namespace Emby.Server.Implementations.LiveTv
 
             var cleanDatabase = true;
 
-            foreach (var service in _services)
+            for (int i=0; i < _services.Length; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _logger.LogDebug("Refreshing guide from {Name}", service.Name);
+                _logger.LogDebug("Refreshing guide from {Name}", _services[i].Name);
 
                 try
                 {
                     var innerProgress = new ActionableProgress<double>();
                     innerProgress.RegisterAction(p => progress.Report(p * progressPerService));
 
-                    var idList = await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
+                    var idList = await RefreshChannelsInternal(_services[i], innerProgress, cancellationToken).ConfigureAwait(false);
 
                     newChannelIdList.AddRange(idList.Item1);
                     newProgramIdList.AddRange(idList.Item2);
@@ -1117,13 +1117,13 @@ namespace Emby.Server.Implementations.LiveTv
             var numComplete = 0;
             var parentFolder = GetInternalLiveTvFolder(cancellationToken);
 
-            foreach (var channelInfo in allChannelsList)
+            for (int i = 0; i < allChannelsList.Count; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    var item = await GetChannelAsync(channelInfo.Item2, channelInfo.Item1, parentFolder, cancellationToken).ConfigureAwait(false);
+                    var item = await GetChannelAsync(allChannelsList[i].Item2, allChannelsList[i].Item1, parentFolder, cancellationToken).ConfigureAwait(false);
 
                     list.Add(item);
                 }
@@ -1133,7 +1133,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error getting channel information for {Name}", channelInfo.Item2.Name);
+                    _logger.LogError(ex, "Error getting channel information for {Name}", allChannelsList[i].Item2.Name);
                 }
 
                 numComplete++;
